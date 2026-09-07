@@ -5,6 +5,7 @@ target/
 !**/src/test/**/target/
 
 src/main/resources/application.properties
+src/main/resources/certs/private.pem
 ### STS ###
 .apt_generated
 .classpath

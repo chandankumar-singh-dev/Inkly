@@ -1,10 +1,12 @@
 package com.inkly.inkly_backend.user.entity;
 
+import com.inkly.inkly_backend.user.attribute_converter.BooleanToStringConverter;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Setter
@@ -16,7 +18,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
-    private Long userID;
+    private Long id;
 
     @Column(
             name = "username",
@@ -54,29 +56,47 @@ public class User {
     )
     private String profileImageUrl;
 
+
+    @Column(name = "is_account_non_expired", nullable = false)
+    @Convert(converter = BooleanToStringConverter.class)
+    private Boolean isAccountNonExpired = true;
+
+    @Column(name = "is_account_non_locked", nullable = false)
+    @Convert(converter = BooleanToStringConverter.class)
+    private Boolean isAccountNonLocked = true;
+
+    @Column(name = "is_credentials_non_expired", nullable = false)
+    @Convert(converter = BooleanToStringConverter.class)
+    private Boolean isCredentialsNonExpired = true;
+
+    @Column(name = "is_enabled", nullable = false)
+    @Convert(converter = BooleanToStringConverter.class)
+    private Boolean isEnabled = true;
+
+
     @Column(
             name = "created_at",
             nullable = false
     )
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @Column(
             name = "updated_at",
             nullable = false
     )
-    private LocalDateTime updatedAt;
+    private Instant updatedAt;
 
 
 
     @PrePersist
     protected void setTimestamp() {
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = Instant.now();
         this.createdAt = now;
         this.updatedAt = now;
     }
 
     @PreUpdate
     protected void updateTimestamp() {
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = Instant.now();
     }
 }
