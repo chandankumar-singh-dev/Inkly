@@ -18,6 +18,8 @@ import jakarta.transaction.Transactional;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -102,6 +104,14 @@ public class AuthService {
     }
 
     @Transactional
+    public String logoutAll() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = userRepository.findByUsername(authentication.getName()).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        refreshTokenRepository.revokeAllByUserId(user.getId(),Instant.now());
+        return "Logout all devices successfully";
+    }
+
+    @Transactional
     public String createRefreshToken(User user, Instant createdAt, Instant expiresAt) {
         String rawRefreshToken = refreshTokenGenerator.generate();
         String refreshTokenHash = refreshTokenHasher.hash(rawRefreshToken);
@@ -115,8 +125,6 @@ public class AuthService {
         return rawRefreshToken;
     }
 
-
-    // TODO revoked entire family is not working
     @Transactional
     public RefreshTokenResponseDto rotationRefreshToken(RefreshTokenRequestDto refreshTokenRequestDto){
         String refreshTokenHash = refreshTokenHasher.hash(refreshTokenRequestDto.getRefreshToken());

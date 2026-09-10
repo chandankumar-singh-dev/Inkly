@@ -10,10 +10,8 @@ import com.inkly.inkly_backend.auth.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/v1/auth/user")
@@ -42,5 +40,16 @@ public class AuthController {
     public ResponseEntity<RefreshTokenResponseDto> refresh(@Valid @RequestBody RefreshTokenRequestDto refreshTokenRequestDto) {
         RefreshTokenResponseDto refreshTokenResponseDto = authService.rotationRefreshToken(refreshTokenRequestDto);
         return ResponseEntity.ok(refreshTokenResponseDto);
+    }
+
+    @GetMapping("/logout-all")
+    public ResponseEntity<String> logoutAll() {
+        return ResponseEntity.ok(authService.logoutAll());
+    }
+
+    // TESTING purpose
+    @GetMapping("/greet")
+    public String greetUser(Authentication authentication) {
+        return "Hello, " + authentication.getName();
     }
 }
