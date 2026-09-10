@@ -37,25 +37,28 @@ public class AuthService {
     private final RefreshTokenGenerator refreshTokenGenerator;
     private final RefreshTokenHasher refreshTokenHasher;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenService refreshTokenService;
 
     public AuthService(UserRepository userRepository,
-                       RegisterUserMapper userMapper,
+                       RegisterUserMapper registerUserMapper,
+                       LoginUserMapper loginUserMapper,
                        PasswordEncoder passwordEncoder,
                        AuthenticationManager authenticationManager,
                        JwtService jwtService,
-                       LoginUserMapper loginUserMapper,
                        RefreshTokenGenerator refreshTokenGenerator,
                        RefreshTokenHasher refreshTokenHasher,
-                       RefreshTokenRepository refreshTokenRepository) {
+                       RefreshTokenRepository refreshTokenRepository,
+                       RefreshTokenService refreshTokenService) {
         this.userRepository = userRepository;
-        this.registerUserMapper = userMapper;
+        this.registerUserMapper = registerUserMapper;
+        this.loginUserMapper = loginUserMapper;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
-        this.loginUserMapper = loginUserMapper;
         this.refreshTokenGenerator = refreshTokenGenerator;
         this.refreshTokenHasher = refreshTokenHasher;
         this.refreshTokenRepository = refreshTokenRepository;
+        this.refreshTokenService = refreshTokenService;
     }
 
     @Transactional
@@ -125,12 +128,7 @@ public class AuthService {
         if(now.isAfter(refreshToken.getExpiresAt())) throw new RefreshTokenAlreadyExpiredException("Token is already expired. Please login again.");
 
         if(refreshToken.getRevokedAt() != null) {
-            List<RefreshToken> refreshTokens = refreshTokenRepository.findByFamilyId(refreshToken.getFamilyId());
-            for (RefreshToken token: refreshTokens) {
-                if(token.getRevokedAt() == null) {
-                    token.setRevokedAt(now);
-                }
-            }
+            refreshTokenService.revokedEntireFamily(refreshToken.getFamilyId());
             throw new RefreshTokenAlreadyRevokedException("Token is already revoked");
         }
 
